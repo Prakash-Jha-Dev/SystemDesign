@@ -54,7 +54,7 @@ The archival database can be HDFS with data written into different files corresp
 
 ## HLD diagram
 Each server is a monolith architecture with replicas across different ticket counters. Archival Process can be created as microservice architecture or as added into monolith server (to save cost).
-![image](https://github.com/Prakash-Jha-Dev/SystemDesign/blob/parking-lot/parkinglot/src/main/resources/ParkingLotHld.png)
+![image](https://github.com/Prakash-Jha-Dev/SystemDesign/blob/main/parkinglot/src/main/resources/ParkingLotHld.png)
 
  
 ## Caching
@@ -86,7 +86,7 @@ The design in consideration also contains following classes to handle various re
 - IPaymentService : A sample interface demonstrating use of PaymentService to complete financial transaction for an associated Ticket.
 - IPaymentReceipt : Store/Print required details to produce a bill for customer.
 
-![Class Diagram](https://github.com/Prakash-Jha-Dev/SystemDesign/blob/parking-lot/parkinglot/src/main/resources/ParkingLot.png)
+![Class Diagram](https://github.com/Prakash-Jha-Dev/SystemDesign/blob/main/parkinglot/src/main/resources/ParkingLot.png)
 
 ### Design principles
 - Seat selection logic should be handled separately and could be choosen at runtime.
