@@ -152,6 +152,15 @@ however, it is handling lot more data and would have higher overhead compared to
 
 We can use Redis/Memcache for caching.
 
+### Bloom Filter
+Bloom Filter helps to further improve search performance by quickly responding to queries where a profile doesn't exist on system.
+It reduced the latency of search queries and helps to free up occupied ports!
+
+Note:
+- Fetching an object from HashMap isn't actually an O(1) operation as once hash is calculated, the list of objects with equal hash needs to be iterated to fetch exact match.
+- Red-Black tree uses logarithmic time to get to exact object.
+- Bloom Filters are simple set of hash sets. Hash of an object can be computed once and its existence can be checked in family of hash set. Time complexity would be O(No. of HashSet)
+
 ### Bottleneck
 
 The current design accomplishes fast search/read but is slow at write. If there is a sudden user growth, there could be too many contacts addititon to handle, 
