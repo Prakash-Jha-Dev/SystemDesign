@@ -210,90 +210,95 @@ The following approximation should be good for a private industry and okayish fo
 Using table details from database section, we can calculate approximate storage and throughtput values. 
 
 #### Metadata storage analysis
-Topic Details: 1M (topics)* 700B (approx details for a topic) ~ 700 MB
+- Topic Details
+    - 1M (topics)* 700B (approx details for a topic) ~ 700 MB
 
-Node Details: 
-    Node details storage requirement would grow as more nodes are included in system. However, depending on various calculated values, we can decide number of nodes in the system. It's like a chicken and egg problem. 
+- Node Details
+    - Node details storage requirement would grow as more nodes are included in system. However, depending on various calculated values, we can decide number of nodes in the system. It's like a chicken and egg problem. 
     
-    In order to start, let's assume that system has approximately 100 nodes. Assuming equal load, each node would handle 0.01M topics as leader and 0.01M * (replicationFactor-1) topics as follower. Lets assume replicationFactor = 3.
+    - In order to start, let's assume that system has approximately 100 nodes. Assuming equal load, each node would handle 0.01M topics as leader and 0.01M * (replicationFactor-1) topics as follower. Lets assume replicationFactor = 3.
 
-    Storage requirements: 0.01M (topics) * 3 (replicationFactor) * 50B (details corresponding to each topic) + 0.01M (topics) * 50B (node details) ~ 1.5MB
+    - Storage requirements: 0.01M (topics) * 3 (replicationFactor) * 50B (details corresponding to each topic) + 0.01M (topics) * 50B (node details) ~ 1.5MB
 
-Consumer Details:
-    We've two tables. One to store details of consumer and allocation within consumer group and another to store offset details.
-    Consumer Group details: 0.1M (consumer group) * 50B (allocation detail) * 1 (topic subscribed by consumer group) * 10 (partitions) ~ 5MB
-    Offset Details: 1M (topics) * 10 (partition) * 40B (data in each row) ~ 400MB
+- Consumer Details
+    - We've two tables. One to store details of consumer and allocation within consumer group and another to store offset details.
+    - Consumer Group details: 0.1M (consumer group) * 50B (allocation detail) * 1 (topic subscribed by consumer group) * 10 (partitions) ~ 5MB
+    - Offset Details: 1M (topics) * 10 (partition) * 40B (data in each row) ~ 400MB
 
 #### Data storage analysis
 Number of message produced by producers, message size, replication factor and data retention policy greatly impacts data storage requirements. Events such as "clicks" i.e., Reaction on a post/tweet, View product details, etc. have small message size but large number of events. On other hand, processing of data in ETL pipeline - such messages could be large but less frequent.
 
 Generally, message size are of 1KB (but they could be as large as 1MB). Very frequent events could be as high as 1M/second (only lasts few seconds) hence we'd use average 1K events/second per topic in calculation.
+
 1M (topics) * 1K (events/sec) * 86400 (data is available for 1 day) * 1KB ~ 86400TB/day
+
 It's a lot of data. Since, very few topics produce 1K events/sec, let's further split topics and events frequency to get more accurate result.
+
 1K (topics) * 1K (events/sec) * 86400 * 1KB + 10K (topics) * 0.1K (events/sec) * 86400 * 1KB + 100K (topics) * 0.01K (events/sec) * 86400 * 1KB + 899K (topics) * 1 (event/sec) * 86400 * 1KB ~ 86.4TB/day
 
 Let's not forget that system has 100 nodes to handle this storage and also manage replicationFactor of 3. Roughly each node would store 86.4TB*3/100 ~ 2.5TB/day. Data retention is usually less for events producing data at faster rate. From above calculation, system is adding 2.5TB data each day when data retention period is 1 day. If data is needed to be stored for more days, the storage would also grow in its multiple.
 
 #### Throughput analysis
-Producer throughput:
-As discussed earlier, the rates of producing data could vary a lot depending on event.
-In case of live events such as cricket match, a lot of people from various device could be sharing their reaction on current status of match. 1M or even more people could be predicting the winner (and consumer processing these events need to update live win prediction.)
+- Producer throughput
+    - As discussed earlier, the rates of producing data could vary a lot depending on event.
+    - In case of live events such as cricket match, a lot of people from various device could be sharing their reaction on current status of match. 1M or even more people could be predicting the winner (and consumer processing these events need to update live win prediction.)
 
-1M (producers) * 1 (message per second) * 10KB (message size) = 10MB/s. Assuming this topic has 10 partition, data is spread over 10 nodes. Resulting throughput per server is 1MB/s.
+    - 1M (producers) * 1 (message per second) * 10KB (message size) = 10MB/s. Assuming this topic has 10 partition, data is spread over 10 nodes. Resulting throughput per server is 1MB/s.
 
-Most use-case doesn't have a lot of producers producing data simultaneously. Let's consider an average scenario:
-1K (producers) * 10 (message per second) * 10KB (message size) = 100MB/s. Throughput across each node would be ~10MB/s.
+    - Most use-case doesn't have a lot of producers producing data simultaneously. Let's consider an average scenario:
+    - 1K (producers) * 10 (message per second) * 10KB (message size) = 100MB/s. Throughput across each node would be ~10MB/s.
 
-Consumer throughput:
-Events requiring heavy-processing usually have more consumers so that lots of messages can be processed in parallel for time-taking process. Whereas, quick to process events have less number of consumers. On average, a consumer would process : 1 (topic) * 5 (partitions) * 1K (messages/sec) * 10KB (message size) ~ 50 MB/s. It is very unlikely that consumer is reading all data from a single node. Average throughput on each server would be ~10MB/s due to one such consumer.
+- Consumer throughput
+    - Events requiring heavy-processing usually have more consumers so that lots of messages can be processed in parallel for time-taking process. Whereas, quick to process events have less number of consumers. On average, a consumer would process : 1 (topic) * 5 (partitions) * 1K (messages/sec) * 10KB (message size) ~ 50 MB/s. It is very unlikely that consumer is reading all data from a single node. Average throughput on each server would be ~10MB/s due to one such consumer.
 
-Server throughput:
-1M (topics) * 1K (events/sec) * 10 KB(message size) / 100 (servers) ~ 0.1TB/s. Again, 1M topics wouldn't be simulataneously producing 1K events/s. Replacing 1M with 1K, gives a better approximation of 100MB/s.
+- Server throughput:
+    - 1M (topics) * 1K (events/sec) * 10 KB(message size) / 100 (servers) ~ 0.1TB/s. Again, 1M topics wouldn't be simulataneously producing 1K events/s. Replacing 1M with 1K, gives a better approximation of 100MB/s.
 
-In case of live events (i.e., heavy load scenario), producers and consumers would be producing and consuming data almost in real-time. So, input to server would be at 100MB/s and output from server would also be 100MB/s.
+    - In case of live events (i.e., heavy load scenario), producers and consumers would be producing and consuming data almost in real-time. So, input to server would be at 100MB/s and output from server would also be 100MB/s.
 
 Note: We've considered that there are 100 servers in our system. In case, system scales to handles more than 1M topics/producers/consumers, number of server nodes would should also be scaled to keep throughput values in limit and deliver similar results as with 1M topics/producers/consumers.
 
 
 ### Architecture
 
-Server:
+#### Server
 Server contains nodes with two kinds of responsibility.
 - To process metadata from nodes, producers and consumers and redirect to correct leader node
 - To process data from producer and send data to consumer
 
 These functionalities can be present on same or different set of server. If there are too less co-ordinator nodes, it is possible that metadata information produced during addition or removal of node or creation of topic isn't processed (If all nodes are down!). If there are too many co-ordinator, time taken to achieve consensus would be high (It is possible to use RAFT algorithm for consensus and make all process run as co-ordinator). This feature can be configured by system adiminstrator depending on factors such as location, network, SLA etc. In HLD diagram, it is assumed that a set of servers from all servers act as co-ordinator and all nodes in server act as data nodes.
 
-DNS:
+#### DNS
 DNS contains IPs of co-ordinator nodes and acts as load-balancer.
 
-Data Flow:
+#### Data Flow
 Producer fetches IP from DNS and connects to a co-ordinator node. It fetches details of all nodes associated with a topic and catches it locally. Producer determines the partition of message and sends it to leader node for corresponding topic and partition.
 
 The node receives the message and verifies if it intended receipient and if is leader for corresponding topic and partition. If it is intended recepient, it stores the message in the file on disk and sends data to follower nodes and responds back to producer depending on acknowledgement configuration.
 
 A consumer node registers itself as a part of consumer group with co-ordinator node. Depending on configuration, partitions might be assigned to it immediately or with delay. Once a consumer node knows details of partition, it communicates with corresponding data node to fetch data from specific offset. After reading data, consumer node requests node to update offset. (Consumer node also stores offset value locally after fetching it initially so that subsequent request can be made without re-fetching offset value).
 
-Topic Creation:
+#### Topic Creation
 A new topic creation request alongwith required details such as partition count is received at one of co-ordinator node. This node fetches node statistics and tries to allocate nodes for each partition as leader or follower and shares allocation details with other co-ordinator and updates database entries.
 
-Cache:
+#### Cache
 Metadata details such as leader/follower nodes for topic and partition combination is stored in local cache after fetching it for first time from database. Cache is updated using read-through mechanism and uses LRU eviction policy.
 
-Recovery:
+#### Recovery
 In case of a consumer node failure, one of existing node can be promoted as co-ordinator node. This newly promoted node would sync with other co-ordinator to update itself with relevant details.
 
 In case of data node failure, one of follower node will be promoted to leader and a new follower node would be assigned immediately or with delay (as per configuration). Once the new follower node is assigned, it'll update itself with messages from leader or other follower node.
 
-Persistence:
+#### Persistence
 Data is stored on internal disk of leader node along with replication on follower node. All write requests are processed on number of nodes configured by producer to receive an acknowlegdement from. In order to guarantee a higher chance of persistence, data should be acknowledged from multiple nodes on each write. The chances of all these nodes failing together is extremely low and thus provides higher chance of persistence.
 
-Data Purging and Archival:
+#### Data Purging and Archival
 Messages are immutable and hence can be considered for compression. However, it should be noted that uncompression would be required later (either on server or consumer) to retrieve original data.
 
 System stores data in a queue like structure. The offset value increases in each newly added file and within file, offset value increases sequentially. During purge, system can simply delete file if offset timestamp is beyond maintenance range or sequentially iterate through file and partition it and later delete chunk corresponding to old data. Purge operation can be time consuming involving multiple disk read and write. It should be performed as scheduled batch operation.
 
-![HLD](https://github.com/Prakash-Jha-Dev/SystemDesign/blob/PubSub/publish-subscribe/src/main/PubSub.png)
+#### Diagram
+![HLD]([../src/main/PubSub.png](https://github.com/Prakash-Jha-Dev/SystemDesign/blob/PubSub/publish-subscribe/src/main/PubSub.png))
 
 ### Bottleneck
 
