@@ -293,7 +293,7 @@ Messages are immutable and hence can be considered for compression. However, it 
 
 System stores data in a queue like structure. The offset value increases in each newly added file and within file, offset value increases sequentially. During purge, system can simply delete file if offset timestamp is beyond maintenance range or sequentially iterate through file and partition it and later delete chunk corresponding to old data. Purge operation can be time consuming involving multiple disk read and write. It should be performed as scheduled batch operation.
 
-[!HLD](/src/main/PubSub.png)
+![HLD](https://github.com/Prakash-Jha-Dev/SystemDesign/blob/PubSub/publish-subscribe/src/main/PubSub.png)
 
 ### Bottleneck
 
