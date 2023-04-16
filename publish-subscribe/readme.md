@@ -342,6 +342,7 @@ While producers and consumers all work in parallel, a single instance of dataMan
 - Use of Interface wherever appropriate to keep the system loosely coupled.
 - A similar pattern as Observer to register Consumers and DataManagers and receive updates from AllocationManager and TopicManager respectively.
 - Classes sharing their state in all instances are created as singleton.
+- Idempotent Producer. A pool of producers can be created and reused instead of spawning a new thread or an instance.
 - Use of Threads to parallelize processing.
 - Code is structured in a way that allows easy refactoring to break into different applications and integration of APIs to enable working on a distributed infrastructure.
 
