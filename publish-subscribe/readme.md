@@ -334,6 +334,8 @@ An instance of TopicManager is created. Multiple instances of DataManagers are c
 
 Topics are onboarded to the system using TopicManager. For a topic, details such as topicName and numberOfPartitions are provided (Replication is not included for simplicity). During the topic onboard stage, topicManager distributes the responsibility of managing different partitions to DataManager (Here, a random offset is used to balance load among dataManagers, any other more useful detail could also be used). It should be noted that TopicManager is a singleton class (created using @Service Spring Annotation). However, DataManagers are not singleton as they need to store details of specific partitions only. In different instances of DataManagers, different data would be stored unlike TopicManager, which would essentially store the same data. To further extend this idea, TopicManager is created as a singleton so all instances share the same data without additional effort. (In a distributed environment, TopicManagers would coordinate with each other to ensure they remain in sync).
 
+The message is a key-value store for data. The key is also used for partitioning by Partitioner. RecordProducer stores metadata such as TopicDetail and construct enriched message (i.e., Record) by adding partition, topicName and timestamp. Records are published to stores using producers.
+
 Producers and Consumers can be created (Each in a thread of its own, to work in parallel). Producers simply transfer a record (message details along with metadata such as topicName, partition, and timestamp) to the concerned DataManager for storage. Consumers connect with TopicManager and register themselves as a member of some consumer groups with AllocationManager. Consumer requests a reallocation of topics allocated to its consumer group and gets details of partitions for data consumption. Consumers poll for data to DataManager, which returns a null or valid record depending on the availability of data.
 
 While producers and consumers all work in parallel, a single instance of dataManager processes writes requests in sequential form. Consumers from different Consumer Groups can read data from the same DataManager in parallel.
@@ -346,7 +348,14 @@ While producers and consumers all work in parallel, a single instance of dataMan
 - Use of Threads to parallelize processing.
 - Code is structured in a way that allows easy refactoring to break into different applications and integration of APIs to enable working on a distributed infrastructure.
 
+#### Miscellaneous
+- Offsets are managed locally by consumers. However, there exists a global OffsetStore which could be used by a new consumer on receiving an existing partition from a failed consumer to get to the correct offset.
+- Some amount of logging and sleep is added to Producer and Consumer classes for illustrative purposes. Their values can be adjusted to demonstrate different behavior on reallocation, fast or slow production and consumption.
+- Classes used as a key in HashMap have overridden equals() and hashCode() methods.
+- Classes used as a key in TreeMap implement the Comparable interface and have overridden the compareTo() method.
+
 #### Code
 Code is written in Java (17) and uses Gradle for the build. SpringBoot framework is used to keep code simple and easily extend to use ORM/Database/APIs. Exception Handling/Logging/Telemetry is not included.
 
-
+#### Testing
+A sample code is available in the test class. It instantiates classes and Threads. Several topics are created and DataManagers register themselves with TopicManager. Several Producer classes populate DataManagers with messages across all topics and partitions (The producer class has sleep added in send method to control the speed of data publishing). Several Consumer classes register themselves with TopicManager and request a re-allocation of partitions among currently available consumers within ConsumerGroup (The consumer class has sleep added in consume method to control the speed of consumption). Consumer classes stay active for 10 seconds before a thread is stopped. The main thread stops execution once all threads have completed their tasks.
