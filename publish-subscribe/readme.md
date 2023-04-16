@@ -355,7 +355,21 @@ While producers and consumers all work in parallel, a single instance of dataMan
 - Classes used as a key in TreeMap implement the Comparable interface and have overridden the compareTo() method.
 
 #### Code
-Code is written in Java (17) and uses Gradle for the build. SpringBoot framework is used to keep code simple and easily extend to use ORM/Database/APIs. Exception Handling/Logging/Telemetry is not included.
+Code is written in Java (17) and uses Gradle for the build. SpringBoot framework is used to keep code simple and easily extend to use ORM/Database/APIs. Exception Handling/Logging/Telemetry is not included. 
+
+Scenarios dealing with failed consumer or producer or data node is not covered and neither is data replication and redistribution.
+
+#### Main function documentation
+- createTopic(TopicDetail)
+    - Creates a topic allowing publishing and consuming data from it
+- send(Record)
+    - Publish a message to the server
+- consume()
+    - Consumes messages for partitions owned by specific consumer
+- requestReallocation()
+    - A consumer can request an immediate reallocation of partitions among consumers part of the same consumer group
+- reallocate()
+    - The allocation manager can periodically distribute partitions among consumers, thus distributing partitions to new consumers and taking away allocated partitions from dead consumers
 
 #### Testing
 A sample code is available in the test class. It instantiates classes and Threads. Several topics are created and DataManagers register themselves with TopicManager. Several Producer classes populate DataManagers with messages across all topics and partitions (The producer class has sleep added in send method to control the speed of data publishing). Several Consumer classes register themselves with TopicManager and request a re-allocation of partitions among currently available consumers within ConsumerGroup (The consumer class has sleep added in consume method to control the speed of consumption). Consumer classes stay active for 10 seconds before a thread is stopped. The main thread stops execution once all threads have completed their tasks.
