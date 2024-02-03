@@ -7,4 +7,4 @@ This GitHub repo contains a collection of system design that aims to provide sol
 - [True Caller](./truecaller)
 - [Pub-Sub](./publish-subscribe)
 - [Database Internals](./database-internals)
-
+- [User Authentication System](./user-auth-system)
