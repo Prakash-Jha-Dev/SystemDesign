@@ -33,7 +33,7 @@ and can contain other optional fields such as
 
 The form is usually rendered on a front-end, to give a more pleasing experience to user as well as to make a more secure system compared to interacting directly with an API. Once user submits the form, it is sent to back-end over network. The back-end might apply some logic to transform the data and finally store it in a database.
 
-![User Account Creation with data sent on http](UAM1.jpg)
+![User Account Creation with data sent on http](resources/UAM1.jpg)
 
 Let's consider that system exposes following APIs:
 
@@ -64,7 +64,7 @@ It is not possible to avoid a malicious device in the network, even impossible s
 
 > Solution: Use HTTPS
 
-![User Account Creation with data sent on https](UAM2.jpg)
+![User Account Creation with data sent on https](resources/UAM2.jpg)
 
 #### Scenario: User has kept same passwords on multiple platform and someone has access to read data from database
 The database engineer on the project would probably have administrator access on the database (Access is required to manage database. There are ways to minimize the adverserial impact due to such access but neverthless, system should be made more secure) or it could even be a hacker who has got access through illegitimate means. Such a person can view stored credential and can use it for impersonating someone or even to login to other services (If the user has kept same password for different sites. Hence, a user should always try to keep unique passwords!).
@@ -77,7 +77,7 @@ It should be noted that during data transmission, an encryption mechanism was us
 
 > Solution: Hash the value received at backend before storing in database
 
-![User Account Creation with data hashed after transfer on https](UAM3.jpg)
+![User Account Creation with data hashed after transfer on https](resources/UAM3.jpg)
 
 #### Scenario: User has kept the same passwords on multiple platform and someone has access to debug or log data recieved at back-end
 This is somewhat a similar scenario as earlier. However, the scenario is less likely as debugging access or logging sensitive information is not considered a good practice (There can be some service providers which might do it, hence a user should keep unqiue passwords by themselves.).
@@ -88,7 +88,7 @@ So, the password is hashed on the client-side and the hashed password is sent to
 
 > Solution: Hash password at front-end
 
-![User Account Creation with data hashed before transfer on https](UAM4.jpg)
+![User Account Creation with data hashed before transfer on https](resources/UAM4.jpg)
 
 #### Scenario: Multiple user has kept the same password
 The system is storing the data after hashing it. However, hashing same values produces same hash! (This is how system performs the match).
@@ -97,11 +97,11 @@ In case of a database breach, if original password of any hash is computed, it'd
 
 > Solution: Add a random string to hashed password
 
-![User Account Creation with salt added to password](UAM5.jpg)
+![User Account Creation with salt added to password](resources/UAM5.jpg)
 
-It is still possible that a hacker has access to both salt and the password. To make the system even more secure, an additional string (called pepper) is added to combination of hashed password and salt. Pepper doesn't have to be unique. It simply adds another layer of security to make things difficult for perpetrator.
+It is still possible that a hacker has access to both salt and the password. To make the system even more secure, an additional string (called pepper) is added to combination of hashed password and salt. Pepper doesn't have to be unique and neither have to be stored in a database. It simply adds another layer of security to make things difficult for perpetrator.
 
-![User Account Creation with salt and pepper added to password](UAM6.jpg)
+![User Account Creation with salt and pepper added to password](resources/UAM6.jpg)
 
 ### Logging in to an account
 The system provides user with a login form. User inputs their credentials such as email and password and submits the form.
@@ -119,7 +119,7 @@ Storing the credential in cookie is not a good idea because a perpetrator gainin
 
 > Solution: Create a session token and store it in cookie.
 
-![Login process with token](UAM2.jpg)
+![Login process with token](resources/UAM7.jpg)
 
 #### Scenario: A perpetrator has gained access to password/hashed password
 In such scenarios, additional information related to user can help to determine identity. e.g., A user based in India created an account. However, the login attempt is made from USA. The location data, in itself might not be a sufficient means to validate identity.
